@@ -1,0 +1,77 @@
+Video Swin Transformer — Temporal Augmentation Results
+=======================================================
+
+Experiment
+----------
+Experiment: Temporal Augmentation
+Architecture: Swin3D-T
+Pretrained Weights: Kinetics-400
+Number of Classes: 10
+Frames per Video: 32
+Input Resolution: 224 x 224
+
+Temporal Augmentation
+---------------------
+Training Sampling:
+The video timeline is divided into 32 temporal segments.
+One frame is randomly sampled from each segment.
+
+The selected frames remain in chronological order.
+
+Validation / Test Sampling:
+Deterministic uniform sampling using 32 frame positions.
+
+Short Video Handling:
+Videos that are too short for random segment sampling use
+deterministic uniform sampling.
+
+Custom Spatial Augmentation:
+None
+
+Dataset
+-------
+Train Videos: 1321
+Validation Videos: 283
+Test Videos: 284
+Total Videos: 1888
+
+Training
+--------
+Total Epochs: 10
+Best Epoch: 9
+Best Validation Accuracy: 89.05%
+
+Learning Rate Adjustment
+------------------------
+Learning rates were reduced before Epoch 8.
+
+Backbone:
+1e-5 -> 5e-6
+
+Classification Head:
+1e-4 -> 5e-5
+
+Final Test Results
+------------------
+Selected Checkpoint: Epoch 9
+Test Loss: 0.3736
+Test Accuracy: 89.44%
+Correct Predictions: 254
+Wrong Predictions: 30
+Total Test Samples: 284
+
+F1 Scores
+---------
+Macro F1: 0.8941
+Weighted F1: 0.8940
+
+Notes
+-----
+An intermediate test was performed after Epoch 8 and achieved
+87.32% test accuracy.
+
+This is not treated as the final result because training continued.
+
+Epoch 9 subsequently achieved the highest validation accuracy
+of 89.05%, so the Epoch 9 checkpoint was selected for the
+final reported test evaluation.

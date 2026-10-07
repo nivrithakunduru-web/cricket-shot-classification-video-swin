@@ -2,30 +2,37 @@
 
 A deep learning project for classifying cricket batting shots from video clips using a pretrained **Video Swin Transformer (Swin3D-T)**.
 
-This repository investigates different strategies for improving cricket shot classification, beginning with a baseline Video Swin Transformer and progressively evaluating spatial augmentation, temporal augmentation, and regularization.
+This repository experimentally evaluates different strategies for cricket shot classification:
+
+1. Baseline Video Swin Transformer
+2. Spatial Augmentation
+3. Temporal Augmentation
+4. Regularization
+
+Each experiment is maintained separately so that its effect on model performance can be evaluated clearly.
 
 ---
 
 ## Project Overview
 
-The objective of this project is to classify cricket batting videos into **10 shot categories** using a Video Swin Transformer.
+The objective is to classify cricket batting videos into **10 shot categories** using a Video Swin Transformer pretrained on Kinetics-400.
 
-Each experiment is maintained separately so that its effect on model performance can be evaluated clearly.
+### Experiment Status
 
 | Experiment | Description | Status |
 |---|---|---|
 | 01 | Video Swin Baseline | ✅ Completed |
 | 02 | Spatial Augmentation | ✅ Completed |
-| 03 | Temporal Augmentation | 🔄 To be added |
+| 03 | Temporal Augmentation | ✅ Completed |
 | 04 | Regularization | 🔄 To be added |
 
 ---
 
-## Dataset
+# Dataset
 
 The dataset contains **1,888 cricket shot videos** belonging to 10 classes.
 
-### Shot Classes
+## Shot Classes
 
 1. Cover
 2. Defense
@@ -38,7 +45,7 @@ The dataset contains **1,888 cricket shot videos** belonging to 10 classes.
 9. Straight
 10. Sweep
 
-### Dataset Split
+## Dataset Split
 
 | Split | Videos |
 |---|---:|
@@ -70,9 +77,9 @@ dataset/
 
 ---
 
-## Model Architecture
+# Model Architecture
 
-The experiments use **Swin3D-T** from Torchvision with pretrained **Kinetics-400** weights.
+All current experiments use **Swin3D-T** from Torchvision.
 
 | Component | Configuration |
 |---|---|
@@ -84,49 +91,31 @@ The experiments use **Swin3D-T** from Torchvision with pretrained **Kinetics-400
 | Fine-tuning | Full model |
 | Framework | PyTorch / Torchvision |
 
-The original Kinetics-400 classification layer predicts 400 action classes. It is replaced with a new classification layer for the **10 cricket shot classes**.
+The original Kinetics-400 classification head predicts 400 action classes.
 
----
-
-## Video Preprocessing
-
-Each video is converted into a fixed-length clip before being passed to the network.
+It is replaced with a new classification layer:
 
 ```text
-Input Video
-    ↓
-Read video frames
-    ↓
-Uniformly sample 32 frames
-    ↓
-Convert frames to tensor
-    ↓
-Resize / spatial processing
-    ↓
-224 × 224
-    ↓
-Normalize
-    ↓
-Video Tensor [C, T, H, W]
-    ↓
-[3, 32, 224, 224]
-    ↓
-Video Swin Transformer
+Original:
+Linear(768 → 400)
+
+Modified:
+Linear(768 → 10)
 ```
 
-Uniform temporal sampling converts videos with different frame counts into a consistent **32-frame representation**.
+This allows the pretrained Video Swin Transformer to classify the 10 cricket shot categories.
 
 ---
 
-## Training Configuration
+# Common Training Configuration
 
 | Parameter | Value |
 |---|---|
 | Optimizer | AdamW |
 | Loss Function | Cross Entropy Loss |
 | Batch Size | 2 |
-| Backbone Learning Rate | 1e-5 |
-| Classification Head Learning Rate | 1e-4 |
+| Initial Backbone LR | 1e-5 |
+| Initial Classification Head LR | 1e-4 |
 | Weight Decay | 1e-4 |
 | Mixed Precision | Enabled |
 | Fine-tuning Strategy | Full fine-tuning |
@@ -134,17 +123,41 @@ Uniform temporal sampling converts videos with different frame counts into a con
 
 Differential learning rates are used during fine-tuning.
 
-The pretrained Video Swin backbone uses a smaller learning rate, while the newly initialized classification head uses a larger learning rate.
+The pretrained backbone receives a smaller learning rate, while the newly initialized classification head receives a larger learning rate.
 
 ---
 
 # Experiment 01 — Baseline Video Swin
 
-The baseline experiment uses deterministic preprocessing without custom spatial or temporal augmentation.
+The baseline establishes the reference performance of the pretrained Video Swin Transformer.
 
-The model was trained for **8 epochs**.
+No custom spatial or temporal augmentation is applied.
+
+## Baseline Preprocessing
+
+```text
+Input Video
+    ↓
+Read complete video
+    ↓
+Uniformly sample 32 frames
+    ↓
+Resize
+    ↓
+Center Crop
+    ↓
+224 × 224
+    ↓
+Normalize
+    ↓
+Tensor [3, 32, 224, 224]
+    ↓
+Video Swin Transformer
+```
 
 ## Baseline Training Results
+
+The baseline was trained for **8 epochs**.
 
 | Epoch | Train Accuracy | Validation Accuracy | Train Loss | Validation Loss |
 |---:|---:|---:|---:|---:|
@@ -157,9 +170,11 @@ The model was trained for **8 epochs**.
 | 7 | 98.41% | 85.87% | 0.0640 | 0.4607 |
 | 8 | 99.02% | 86.57% | 0.0500 | 0.5066 |
 
-The highest validation accuracy was obtained at **Epoch 6**, so the Epoch 6 checkpoint was selected for final testing.
+The highest validation accuracy occurred at **Epoch 6**.
 
-## Baseline Test Results
+Therefore, the Epoch 6 checkpoint was selected for final testing.
+
+## Baseline Final Results
 
 | Metric | Result |
 |---|---:|
@@ -168,23 +183,23 @@ The highest validation accuracy was obtained at **Epoch 6**, so the Epoch 6 chec
 | Test Loss | **0.3554** |
 | Test Accuracy | **88.03%** |
 | Correct Predictions | **250 / 284** |
-| Wrong Predictions | **34 / 284** |
-| Macro F1 Score | **0.8798** |
-| Weighted F1 Score | **0.8804** |
+| Wrong Predictions | 34 |
+| Macro F1 | **0.8798** |
+| Weighted F1 | **0.8804** |
 
-### Baseline Accuracy Curve
+### Accuracy Curve
 
 ![Baseline Accuracy Curve](results/baseline/accuracy_curve.png)
 
-### Baseline Loss Curve
+### Loss Curve
 
 ![Baseline Loss Curve](results/baseline/loss_curve.png)
 
-### Baseline Confusion Matrix
+### Confusion Matrix
 
 ![Baseline Confusion Matrix](results/baseline/confusion_matrix.png)
 
-Detailed baseline metrics are available in:
+Detailed metrics:
 
 ```text
 results/baseline/metrics.txt
@@ -194,9 +209,11 @@ results/baseline/metrics.txt
 
 # Experiment 02 — Spatial Augmentation
 
-The second experiment introduces **training-only spatial augmentation** while keeping validation and test preprocessing deterministic.
+This experiment investigates whether introducing spatial variation during training improves generalization.
 
-The same randomly selected spatial transformation parameters are applied consistently across all **32 frames of a clip**, preserving temporal consistency.
+Spatial augmentation is applied **only to training videos**.
+
+Validation and test preprocessing remain deterministic.
 
 ## Spatial Augmentation Strategy
 
@@ -208,9 +225,13 @@ The same randomly selected spatial transformation parameters are applied consist
 | Contrast | ±0.15 |
 | Saturation | ±0.10 |
 
-The model was trained for **7 epochs**.
+The same randomly generated spatial transformation parameters are applied consistently across all frames of a clip.
 
-## Spatial Augmentation Training Results
+This preserves temporal consistency while modifying spatial appearance.
+
+## Spatial Training Results
+
+The model was trained for **7 epochs**.
 
 | Epoch | Train Accuracy | Validation Accuracy | Train Loss | Validation Loss |
 |---:|---:|---:|---:|---:|
@@ -222,9 +243,9 @@ The model was trained for **7 epochs**.
 | **6** | **94.85%** | **77.39%** | **0.1927** | **0.6222** |
 | 7 | 95.08% | 74.91% | 0.1757 | 0.7836 |
 
-The highest validation accuracy was obtained at **Epoch 6**, so the Epoch 6 checkpoint was selected for final testing.
+Epoch 6 achieved the highest validation accuracy and was selected for final testing.
 
-## Spatial Augmentation Test Results
+## Spatial Augmentation Final Results
 
 | Metric | Result |
 |---|---:|
@@ -233,26 +254,141 @@ The highest validation accuracy was obtained at **Epoch 6**, so the Epoch 6 chec
 | Test Loss | **0.5284** |
 | Test Accuracy | **80.99%** |
 | Correct Predictions | **230 / 284** |
-| Wrong Predictions | **54 / 284** |
-| Macro F1 Score | **0.8082** |
-| Weighted F1 Score | **0.8092** |
+| Wrong Predictions | 54 |
+| Macro F1 | **0.8082** |
+| Weighted F1 | **0.8092** |
 
-### Spatial Augmentation Accuracy Curve
+### Accuracy Curve
 
-![Spatial Augmentation Accuracy Curve](results/spatial_augmentation/accuracy_curve.png)
+![Spatial Accuracy Curve](results/spatial_augmentation/accuracy_curve.png)
 
-### Spatial Augmentation Loss Curve
+### Loss Curve
 
-![Spatial Augmentation Loss Curve](results/spatial_augmentation/loss_curve.png)
+![Spatial Loss Curve](results/spatial_augmentation/loss_curve.png)
 
-### Spatial Augmentation Confusion Matrix
+### Confusion Matrix
 
-![Spatial Augmentation Confusion Matrix](results/spatial_augmentation/confusion_matrix.png)
+![Spatial Confusion Matrix](results/spatial_augmentation/confusion_matrix.png)
 
-Detailed spatial augmentation metrics are available in:
+Detailed metrics:
 
 ```text
 results/spatial_augmentation/metrics.txt
+```
+
+---
+
+# Experiment 03 — Temporal Augmentation
+
+The temporal augmentation experiment introduces variation in **which frames are selected from each training video**.
+
+Instead of always selecting the same deterministic frame positions, the training video timeline is divided into **32 temporal segments**.
+
+One frame is randomly selected from each segment.
+
+## Temporal Training Sampling
+
+```text
+Complete Video Timeline
+        ↓
+Divide timeline into 32 segments
+        ↓
+Randomly choose one frame
+from each segment
+        ↓
+Preserve chronological order
+        ↓
+32-frame training clip
+        ↓
+Video Swin Transformer
+```
+
+Therefore, the same training video can produce different 32-frame clips on different accesses.
+
+This provides temporal variation while preserving the overall sequence of the cricket shot.
+
+## Validation and Test Sampling
+
+Temporal randomness is **not** applied during validation or testing.
+
+```text
+Validation / Test Video
+        ↓
+Deterministic uniform sampling
+        ↓
+32 frames
+        ↓
+Video Swin Transformer
+```
+
+This ensures reproducible evaluation.
+
+No custom spatial augmentation is introduced in this experiment.
+
+---
+
+## Temporal Training Results
+
+The temporal augmentation model was trained for **10 epochs**.
+
+| Epoch | Train Accuracy | Validation Accuracy | Train Loss | Validation Loss |
+|---:|---:|---:|---:|---:|
+| 1 | 40.42% | 56.89% | 1.7163 | 1.1819 |
+| 2 | 74.34% | 74.56% | 0.8072 | 0.7263 |
+| 3 | 86.37% | 80.21% | 0.4328 | 0.5246 |
+| 4 | 92.58% | 83.75% | 0.2847 | 0.5198 |
+| 5 | 95.53% | 85.87% | 0.1771 | 0.4200 |
+| 6 | 97.12% | 86.57% | 0.1120 | 0.4087 |
+| 7 | 96.82% | 80.57% | 0.1033 | 0.7537 |
+| 8 | 98.56% | 88.69% | 0.0709 | 0.3673 |
+| **9** | **99.62%** | **89.05%** | **0.0440** | **0.3642** |
+| 10 | 99.17% | 85.51% | 0.0404 | 0.4932 |
+
+Before Epoch 8, the learning rates were reduced:
+
+```text
+Backbone:
+1e-5 → 5e-6
+
+Classification Head:
+1e-4 → 5e-5
+```
+
+Epoch 9 achieved the highest validation accuracy of **89.05%** and was selected as the final checkpoint.
+
+An intermediate test was performed after Epoch 8, but training subsequently continued. Therefore, that intermediate result is not used as the final reported result.
+
+---
+
+## Temporal Augmentation Final Results
+
+| Metric | Result |
+|---|---:|
+| Best Epoch | **9** |
+| Best Validation Accuracy | **89.05%** |
+| Test Loss | **0.3736** |
+| Test Accuracy | **89.44%** |
+| Correct Predictions | **254 / 284** |
+| Wrong Predictions | 30 |
+| Macro F1 | **0.8941** |
+| Weighted F1 | **0.8940** |
+
+### Accuracy Curve
+
+![Temporal Accuracy Curve](results/temporal_augmentation/accuracy_curve.png)
+
+### Loss Curve
+
+![Temporal Loss Curve](results/temporal_augmentation/loss_curve.png)
+
+### Confusion Matrix
+
+![Temporal Confusion Matrix](results/temporal_augmentation/confusion_matrix.png)
+
+Detailed metrics:
+
+```text
+results/temporal_augmentation/metrics.txt
 ```
 
 ---
@@ -261,28 +397,58 @@ results/spatial_augmentation/metrics.txt
 
 | Experiment | Best Epoch | Best Validation Accuracy | Test Accuracy | Macro F1 | Weighted F1 |
 |---|---:|---:|---:|---:|---:|
-| **Baseline** | 6 | **87.28%** | **88.03%** | **0.8798** | **0.8804** |
+| Baseline | 6 | 87.28% | 88.03% | 0.8798 | 0.8804 |
 | Spatial Augmentation | 6 | 77.39% | 80.99% | 0.8082 | 0.8092 |
-| Temporal Augmentation | — | — | — | — | — |
+| **Temporal Augmentation** | **9** | **89.05%** | **89.44%** | **0.8941** | **0.8940** |
 | Regularization | — | — | — | — | — |
-
-## Current Observation
-
-Spatial augmentation did **not improve performance over the baseline** in this experiment.
-
-Compared with the baseline:
-
-- Validation accuracy decreased from **87.28% → 77.39%**
-- Test accuracy decreased from **88.03% → 80.99%**
-- Macro F1 decreased from **0.8798 → 0.8082**
-
-This result indicates that the selected spatial transformations and their current strengths did not provide a performance improvement for this dataset and training configuration.
-
-The result is retained as part of the experimental study rather than discarded, allowing direct comparison with the upcoming temporal augmentation and regularization experiments.
 
 ---
 
-## Repository Structure
+# Current Findings
+
+## Baseline → Spatial Augmentation
+
+Spatial augmentation reduced performance:
+
+```text
+Validation Accuracy
+87.28% → 77.39%
+
+Test Accuracy
+88.03% → 80.99%
+```
+
+The chosen spatial transformations therefore did not improve performance under this experiment configuration.
+
+---
+
+## Baseline → Temporal Augmentation
+
+Temporal augmentation improved performance:
+
+```text
+Validation Accuracy
+87.28% → 89.05%
+Improvement: +1.77 percentage points
+
+Test Accuracy
+88.03% → 89.44%
+Improvement: +1.41 percentage points
+```
+
+Macro F1 also improved:
+
+```text
+0.8798 → 0.8941
+```
+
+Among the experiments completed so far, **temporal augmentation provides the strongest performance**.
+
+This suggests that introducing variation in temporal frame selection is beneficial for this video-based cricket shot classification task.
+
+---
+
+# Repository Structure
 
 ```text
 cricket-shot-classification-video-swin/
@@ -298,6 +464,7 @@ cricket-shot-classification-video-swin/
 │   └── 04_video_swin_regularization.ipynb
 │
 └── results/
+    │
     ├── baseline/
     │   ├── accuracy_curve.png
     │   ├── loss_curve.png
@@ -311,16 +478,19 @@ cricket-shot-classification-video-swin/
     │   └── metrics.txt
     │
     ├── temporal_augmentation/
+    │   ├── accuracy_curve.png
+    │   ├── loss_curve.png
+    │   ├── confusion_matrix.png
+    │   └── metrics.txt
+    │
     └── regularization/
 ```
 
-The temporal augmentation and regularization notebooks and their corresponding result files will be added progressively.
-
 ---
 
-## Installation
+# Installation
 
-Install the required Python packages using:
+Install the required packages using:
 
 ```bash
 pip install -r requirements.txt
@@ -337,7 +507,7 @@ Main dependencies include:
 
 ---
 
-## Hardware
+# Hardware
 
 The experiments were performed using an **NVIDIA Tesla T4 GPU** in Kaggle.
 
@@ -345,14 +515,18 @@ Automatic Mixed Precision (AMP) was used during training to reduce GPU memory us
 
 ---
 
-## Future Experiments
+# Next Experiment
 
-### Experiment 03 — Temporal Augmentation
+## Experiment 04 — Regularization
 
-The next experiment evaluates temporal augmentation strategies designed to introduce variation in the temporal sampling of cricket shot videos.
+The next experiment investigates regularization strategies designed to reduce overfitting and improve model generalization.
 
-### Experiment 04 — Regularization
+After the regularization experiment is completed, all four experiments will be compared using:
 
-The final experiment evaluates regularization strategies designed to reduce overfitting and improve model generalization.
-
-After all experiments are completed, their validation accuracy, test accuracy, F1 scores, training behavior, and class-wise performance will be compared.
+- Validation accuracy
+- Test accuracy
+- Test loss
+- Macro F1
+- Weighted F1
+- Training and validation curves
+- Class-wise prediction behavior
