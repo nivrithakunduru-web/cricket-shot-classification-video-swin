@@ -1,0 +1,36 @@
+Video Swin Transformer — Baseline Results
+==========================================
+
+Model
+-----
+Architecture: Swin3D-T
+Pretrained Weights: Kinetics-400
+Number of Classes: 10
+Frames per Video: 32
+Input Resolution: 224 x 224
+
+Dataset
+-------
+Train Videos: 1321
+Validation Videos: 283
+Test Videos: 284
+Total Videos: 1888
+
+Training
+--------
+Total Epochs: 8
+Best Epoch: 6
+Best Validation Accuracy: 87.28%
+
+Final Test Results
+------------------
+Test Loss: 0.3554
+Test Accuracy: 88.03%
+Correct Predictions: 250
+Wrong Predictions: 34
+Total Test Samples: 284
+
+F1 Scores
+---------
+Macro F1: 0.8798
+Weighted F1: 0.8804
