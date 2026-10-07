@@ -1,0 +1,48 @@
+Video Swin Transformer — Spatial Augmentation Results
+======================================================
+
+Experiment
+----------
+Experiment: Spatial Augmentation
+Architecture: Swin3D-T
+Pretrained Weights: Kinetics-400
+Number of Classes: 10
+Frames per Video: 32
+Input Resolution: 224 x 224
+
+Spatial Augmentation
+--------------------
+Random Resized Crop Scale: 0.80 - 1.00
+Horizontal Flip Probability: 0.5
+Brightness Variation: +/- 0.15
+Contrast Variation: +/- 0.15
+Saturation Variation: +/- 0.10
+
+The same spatial transformation parameters are applied consistently
+across all frames of a video clip.
+
+Dataset
+-------
+Train Videos: 1321
+Validation Videos: 283
+Test Videos: 284
+Total Videos: 1888
+
+Training
+--------
+Total Epochs: 7
+Best Epoch: 6
+Best Validation Accuracy: 77.39%
+
+Final Test Results
+------------------
+Test Loss: 0.5284
+Test Accuracy: 80.99%
+Correct Predictions: 230
+Wrong Predictions: 54
+Total Test Samples: 284
+
+F1 Scores
+---------
+Macro F1: 0.8082
+Weighted F1: 0.8092
