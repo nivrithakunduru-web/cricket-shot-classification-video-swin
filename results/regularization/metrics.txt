@@ -1,0 +1,55 @@
+Video Swin Transformer — Regularization Results
+================================================
+
+Experiment
+----------
+Experiment: Label Smoothing Regularization
+Architecture: Swin3D-T
+Pretrained Weights: Kinetics-400
+Number of Classes: 10
+Frames per Video: 32
+Input Resolution: 224 x 224
+
+Regularization Configuration
+----------------------------
+Loss Function: CrossEntropyLoss
+Label Smoothing: 0.1
+Optimizer: AdamW
+Weight Decay: 1e-4
+Initial Backbone Learning Rate: 1e-5
+Initial Head Learning Rate: 1e-4
+Mixed Precision: Enabled
+
+Dataset
+-------
+Train Videos: 1321
+Validation Videos: 283
+Test Videos: 284
+Total Videos: 1888
+
+Training
+--------
+Total Epochs: 8
+Best Epoch: 5
+Best Validation Accuracy: 90.11%
+
+Final Test Results
+------------------
+Selected Checkpoint: Epoch 5
+Test Loss: 0.4258
+Test Accuracy: 88.38%
+Correct Predictions: 251
+Wrong Predictions: 33
+Total Test Samples: 284
+
+F1 Scores
+---------
+Macro F1: 0.8822
+Weighted F1: 0.8822
+
+Notes
+-----
+Training continued through Epoch 8.
+
+Epoch 5 achieved the highest validation accuracy and
+was selected for final test evaluation.
